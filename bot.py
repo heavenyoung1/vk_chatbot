@@ -48,3 +48,5 @@ for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         if event.to_me:
             request = event.text
+
+
