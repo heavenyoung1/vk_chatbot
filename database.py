@@ -1,4 +1,6 @@
-import  psycopg2
+import psycopg2
+
+
 from config import *
 
 connection = psycopg2.connect(
@@ -7,35 +9,54 @@ connection = psycopg2.connect(
     password=password,
     database=db_name
 )
+
 connection.autocommit = True
+
 
 def create_table():
     with connection.cursor() as cursor:
         cursor.execute(
             """CREATE TABLE users(
-                id serial PRIMARY KEY,
+                id serial,
                 first_name varchar(50) NOT NULL,
                 last_name varchar(50) NOT NULL,
-                vk_link varchar(75) NOT NULL);"""
-    )
+                vk_id varchar(75) NOT NULL,
+                vk_link varchar(75) PRIMARY KEY);"""
+        )
     print("[INFO] Table was created.")
 
-def inser_data():
+
+# def insert_data():
+#     with connection.cursor() as cursor:
+#         cursor.execute(
+#             """INSERT INTO users (first_name, last_name, vk_link) VALUES
+#             ('Eugene', 'Mefyod', '12345678');"""
+#         )
+
+def insert_data(first_name, last_name, vk_id, vk_link):
     with connection.cursor() as cursor:
         cursor.execute(
-            """INSERT INTO users (first_name, last_name, vk_id) VALUES
-            ('Eugene', 'Mefyod', '12345678');"""
+            f"""INSERT INTO users (first_name, last_name, vk_id, vk_link) VALUES
+            ('{first_name}', '{last_name}', '{vk_id}', '{vk_link}');"""
         )
 
-with connection.cursor() as cursor:
-    cursor.execute(
-        """SELECT id, first_name, last_name, vk_id  FROM users;"""
-    )
-    print(cursor.fetchone())
+def select():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """SELECT id, first_name, last_name, vk_link  FROM users;"""
+        )
+        return cursor.fetchall()
 
-with connection.cursor() as cursor:
-    cursor.execute(
-        """DROP TABLE users;"""
-    )
-    print('[INFO] Table was deleted.')
+
+def drop():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """DROP TABLE users;"""
+        )
+        print('[INFO] Table was deleted.')
+
+# drop()
+# create_table()
+# insert_data()
+# drop()
 
