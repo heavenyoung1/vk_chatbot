@@ -1,7 +1,6 @@
 import vk_api
 import requests
 import datetime
-from bot import *
 from vk_api.longpoll import VkLongPoll, VkEventType
 from config import user_token
 from config import comm_token
@@ -9,35 +8,6 @@ from random import randrange
 import json
 from pprint import pprint
 from database import *
-
-
-# -----------------------------------KEYBOARD-----------------------------#
-def keyboard(user_id, message):
-    vk.method('messages.send', {'user_id': user_id,
-                                'message': message,
-                                'random_id': 0,
-                                'keyboard': keyboard})
-
-
-def get_but(text, color):
-    return {
-        "action": {
-            "type": "text",
-            "payload": "{\"button\": \"" + "1" + "\"}",
-            "label": f"{text}"
-        },
-        "color": f"{color}"
-    }
-keyboard = {
-    "one_time": True,
-    "buttons": [
-        [get_but('Начать', 'primary')]
-    ]
-}
-
-keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
-keyboard = str(keyboard.decode('utf-8'))
-
 
 class VKBot():
     def __init__(self, user_id):
@@ -52,27 +22,27 @@ class VKBot():
     #     information_dict = response['response']
     #     return information_dict
 
-    def find_city(self, user_id):  # функция для поиска города, в словарь
-        url = f'https://api.vk.com/method/users.get?fields=city'
-        params = {'access_token': user_token,
-                  'user_ids': user_id,
-                  'v': '5.131'}
-        repl = requests.get(url, params=params)
-        response = repl.json()
-        information_dict = response['response']
-        for i in information_dict:
-            for key, value in i.items():
-                if key == 'city':
-                    dict_city = i.get('city')
-        return dict_city
+    # def find_city(self, user_id):  # функция для поиска города, в словарь
+    #     url = f'https://api.vk.com/method/users.get?fields=city'
+    #     params = {'access_token': user_token,
+    #               'user_ids': user_id,
+    #               'v': '5.131'}
+    #     repl = requests.get(url, params=params)
+    #     response = repl.json()
+    #     information_dict = response['response']
+    #     for i in information_dict:
+    #         for key, value in i.items():
+    #             if key == 'city':
+    #                 dict_city = i.get('city')
+    #     return dict_city
 
-    def city_id(self, user_id):  # SEARCHING ID CITY
-        dict = bot.find_city(user_id)
-        return str(dict.get('id'))
-
-    def city_name(self, user_id):  # SEARCHING CITY NAME
-        dict = bot.find_city(user_id)
-        return dict.get('title')
+    # def city_id(self, user_id):  # SEARCHING ID CITY
+    #     dict = bot.find_city(user_id)
+    #     return str(dict.get('id'))
+    #
+    # def city_name(self, user_id):  # SEARCHING CITY NAME
+    #     dict = bot.find_city(user_id)
+    #     return dict.get('title')
 
     def name(self, user_id):
         url = f'https://api.vk.com/method/users.get'
@@ -88,18 +58,18 @@ class VKBot():
                 last_name = i.get('last_name')
             return first_name
 
-    # def get_age(self,user_id):
-    #     url = url = f'https://api.vk.com/method/users.get?fields=bdate'
-    #     params = {'access_token': user_token, 'user_ids': user_id, 'v': '5.131'}
-    #     repl = requests.get(url, params=params)
-    #     response = repl.json()
-    #     information_list = response['response']
-    #     for i in information_list:
-    #         date =  i.get('bdate')# Mehod is complited
-    #         date_list = date.split('.')
-    #         year = int(date_list[2])
-    #         year_now = datetime.date.today().year
-    #         return year_now - year
+    def get_age(self,user_id):
+        url = url = f'https://api.vk.com/method/users.get?fields=bdate'
+        params = {'access_token': user_token, 'user_ids': user_id, 'v': '5.131'}
+        repl = requests.get(url, params=params)
+        response = repl.json()
+        information_list = response['response']
+        for i in information_list:
+            date =  i.get('bdate')# Mehod is complited
+            date_list = date.split('.')
+            year = int(date_list[2])
+            year_now = datetime.date.today().year
+            return year_now - year
 
     def get_sex(self, user_id):
         url = f'https://api.vk.com/method/users.get?fields=sex'
@@ -141,18 +111,58 @@ class VKBot():
             insert_data(first_name, last_name, vk_id, vk_link)
         return f'Поиск завершён'
 
-    # def get_photo(self, user_id):
+    # def get_photos_id(self, user_id):
     #     url = 'https://api.vk.com/method/photos.getAll'
     #     params = {'access_token': user_token,
+    #               'type' : 'album',
+    #               #'photo_sizes' : 1,
+    #               #'no_service_albums' : 1,
+    #               'extended': 1,
+    #               'count' : 3,
     #               'v': '5.131'}
     #     resp = requests.get(url, params=params)
-    #     return resp
+    #     dict_photos = dict()
+    #     resp_json = resp.json()
+    #     dict_1 = resp_json['response']
+    #     list_1 = dict_1['items']
+    #     for i in list_1:
+    #         photo_id = str(i.get('id'))
+    #         i_likes = i.get('likes')
+    #         if i_likes.get('count'):
+    #             likes = i_likes.get('count')
+    #     dict_photos[likes] = photo_id
+    #     list_of_ids = sorted(dict_photos.items(), reverse=True)
+    #     return list_of_ids
+    #
+    # def get_photo_1(self,user_id):
+    #     list = self.get_photos_id(user_id)
+    #     count = 0
+    #     for i in list:
+    #         count += 1
+    #         if count == 1:
+    #             return i[1]
+    #
+    # def get_photo_2(self,user_id):
+    #     list = self.get_photos_id(user_id)
+    #     count = 0
+    #     for i in list:
+    #         count += 1
+    #         if count == 2:
+    #             return i[1]
+    #
+    # def get_photo_3(self,user_id):
+    #     list = self.get_photos_id(user_id)
+    #     count = 0
+    #     for i in list:
+    #         count += 1
+    #         if count == 3:
+    #             return i[1]
 
 
 bot = VKBot('342034365')
 # print(bot.get_photo('342034365'))
 # print(bot.find_user('342034365'))
-
+#pprint(bot.get_photos_id('342034365'))
 
 # ------------------------------------------------------------------------------#
 
@@ -168,7 +178,9 @@ def write_msg(user_id, message):  # метод для отправки сооб�
 
 def name(user_id):
     url = f'https://api.vk.com/method/users.get'
-    params = {'access_token': user_token, 'user_ids': user_id, 'v': '5.131'}
+    params = {'access_token': user_token,
+              'user_ids': user_id,
+              'v': '5.131'}
     repl = requests.get(url, params=params)
     response = repl.json()
     information_dict = response['response']
@@ -178,10 +190,11 @@ def name(user_id):
             last_name = i.get('last_name')
             return first_name
 
-
 def get_sex(user_id):
     url = f'https://api.vk.com/method/users.get?fields=sex'
-    params = {'access_token': user_token, 'user_ids': user_id, 'v': '5.131'}
+    params = {'access_token': user_token,
+              'user_ids': user_id,
+              'v': '5.131'}
     repl = requests.get(url, params=params)
     response = repl.json()
     information_list = response['response']
@@ -193,7 +206,6 @@ def get_sex(user_id):
             find_sex = 2
             return find_sex
 
-
 def get_age(user_id):
     url = url = f'https://api.vk.com/method/users.get?fields=bdate'
     params = {'access_token': user_token, 'user_ids': user_id, 'v': '5.131'}
@@ -203,10 +215,12 @@ def get_age(user_id):
     for i in information_list:
         date = i.get('bdate')  # Mehod is complited
         date_list = date.split('.')
-        year = int(date_list[2])
-        year_now = int(datetime.date.today().year)
-    return year_now - year
-
+        try:
+            year = int(date_list[2])
+            year_now = int(datetime.date.today().year)
+            return year_now - year
+        except IndexError:
+            write_msg(user_id, 'ERROR')
 
 def find_city(user_id):
     url = f'https://api.vk.com/method/users.get?fields=city'
@@ -224,27 +238,6 @@ def find_city(user_id):
 def city_id(user_id):  # SEARCHING ID CITY
     dict = find_city(user_id)
     return str(dict.get('id'))
-
-
-def age_from(user_id):
-    write_msg(user_id, 'Введите нижнюю границу возраста искомого человека: ')
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            if event.to_me:
-                age_from = event.text
-                return age_from
-                write_msg(user_id, f'Нижняя граница - {age_from}')
-
-
-def age_to(user_id):
-    write_msg(user_id, 'Введите верхнюю границу возраста искомого человека: ')
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            if event.to_me:
-                age_to = event.text
-                return age_to
-                write_msg(user_id, f'Верхняя граница - {age_to}')
-
 
 def find_user(user_id):
     url = f'https://api.vk.com/method/users.search?fields=id,domain,first_name,last_name'
@@ -271,27 +264,49 @@ def find_user(user_id):
         insert_data(first_name, last_name, vk_id, vk_link)
     return f'Поиск завершён'
 
+def get_photos_id(user_id):
+    url = 'https://api.vk.com/method/photos.getAll'
+    params = {'access_token': user_token,
+              'type' : 'album',
+              #'photo_sizes' : 1,
+              #'no_service_albums' : 1,
+              'extended': 1,
+              'count' : 3,
+              'v': '5.131'}
+    resp = requests.get(url, params=params)
+    dict_photos = dict()
+    resp_json = resp.json()
+    dict_1 = resp_json['response']
+    list_1 = dict_1['items']
+    for i in list_1:
+        photo_id = str(i.get('id'))
+        i_likes = i.get('likes')
+        if i_likes.get('count'):
+            likes = i_likes.get('count')
+    dict_photos[likes] = photo_id
+    list_of_ids = sorted(dict_photos.items(), reverse=True)
+    return list_of_ids
 
-print(find_user('342034365'))
+def get_photo_1(user_id):
+    list = get_photos_id(user_id)
+    count = 0
+    for i in list:
+        count += 1
+        if count == 1:
+            return i[1]
 
+def get_photo_2(user_id):
+    list = get_photos_id(user_id)
+    count = 0
+    for i in list:
+        count += 1
+        if count == 2:
+            return i[1]
 
-def age_from():
-    write_msg('342034365', 'Введите нижнуюю границу возраста искомого человека: ')
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            if event.to_me:
-                age_from = event.text
-                write_msg(event.user_id, f'Нижняя граница - {age_from}')
-                return age_from
-
-
-def age_to():
-    write_msg('342034365', 'Введите верхнюю границу возраста искомого человека: ')
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            if event.to_me:
-                age_to = event.text
-                write_msg(event.user_id, f'Верхняя граница - {age_to}')
-                return age_to
-
-
+def get_photo_3(user_id):
+    list = get_photos_id(user_id)
+    count = 0
+    for i in list:
+        count += 1
+        if count == 3:
+            return i[1]
