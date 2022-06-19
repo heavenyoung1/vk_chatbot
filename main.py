@@ -87,83 +87,85 @@ class VKBot():
                 find_sex = 2
                 return find_sex
 
-    def find_user(self, user_id):  # ГОТОВО
-        url = f'https://api.vk.com/method/users.search?fields=id,domain,first_name,last_name'
-        params = {'access_token': user_token,
-                  'v': '5.131', 'sex': 1,
-                  'age_from': 25, 'age_to': 35,
-                  'city': '33',
-                  'status': '1' or '6',
-                  'count': 100}
-        resp = requests.get(url, params=params)
-        resp_json = resp.json()
-        # return resp_json
-        dict_1 = resp_json['response']
-        list_1 = dict_1['items']
-        information = []
-        drop()
-        create_table()
-        for person_dict in list_1:
-            first_name = person_dict.get('first_name')
-            last_name = person_dict.get('last_name')
-            vk_id = str(person_dict.get('id'))
-            vk_link = 'https://vk.com/id' + str(person_dict.get('id'))
-            insert_data(first_name, last_name, vk_id, vk_link)
-        return f'Поиск завершён'
-
-    # def get_photos_id(self, user_id):
-    #     url = 'https://api.vk.com/method/photos.getAll'
+    # def find_user(self, user_id):  # ГОТОВО
+    #     url = f'https://api.vk.com/method/users.search?fields=id,domain,first_name,last_name'
     #     params = {'access_token': user_token,
-    #               'type' : 'album',
-    #               #'photo_sizes' : 1,
-    #               #'no_service_albums' : 1,
-    #               'extended': 1,
-    #               'count' : 3,
-    #               'v': '5.131'}
+    #               'v': '5.131', 'sex': 1,
+    #               'age_from': 25, 'age_to': 35,
+    #               'city': '33',
+    #               'status': '1' or '6',
+    #               'count': 100}
     #     resp = requests.get(url, params=params)
-    #     dict_photos = dict()
     #     resp_json = resp.json()
+    #     # return resp_json
     #     dict_1 = resp_json['response']
     #     list_1 = dict_1['items']
-    #     for i in list_1:
-    #         photo_id = str(i.get('id'))
-    #         i_likes = i.get('likes')
-    #         if i_likes.get('count'):
-    #             likes = i_likes.get('count')
-    #     dict_photos[likes] = photo_id
-    #     list_of_ids = sorted(dict_photos.items(), reverse=True)
-    #     return list_of_ids
-    #
-    # def get_photo_1(self,user_id):
-    #     list = self.get_photos_id(user_id)
-    #     count = 0
-    #     for i in list:
-    #         count += 1
-    #         if count == 1:
-    #             return i[1]
-    #
-    # def get_photo_2(self,user_id):
-    #     list = self.get_photos_id(user_id)
-    #     count = 0
-    #     for i in list:
-    #         count += 1
-    #         if count == 2:
-    #             return i[1]
-    #
-    # def get_photo_3(self,user_id):
-    #     list = self.get_photos_id(user_id)
-    #     count = 0
-    #     for i in list:
-    #         count += 1
-    #         if count == 3:
-    #             return i[1]
+    #     information = []
+    #     drop()
+    #     create_table()
+    #     for person_dict in list_1:
+    #         first_name = person_dict.get('first_name')
+    #         last_name = person_dict.get('last_name')
+    #         vk_id = str(person_dict.get('id'))
+    #         vk_link = 'https://vk.com/id' + str(person_dict.get('id'))
+    #         insert_data(first_name, last_name, vk_id, vk_link)
+    #     return f'Поиск завершён'
+
+
+    def get_photos_id(self, user_id):
+        url = 'https://api.vk.com/method/photos.getAll'
+        params = {'access_token': user_token,
+                  'type' : 'album',
+                  'owner_id' : '328116348',
+                  'extended': 1,
+                  'count' : 3,
+                  'v': '5.131'}
+        resp = requests.get(url, params=params)
+        dict_photos = dict()
+        resp_json = resp.json()
+        dict_1 = resp_json['response']
+        list_1 = dict_1['items']
+        for i in list_1:
+            photo_id = str(i.get('id'))
+            i_likes = i.get('likes')
+            if i_likes.get('count'):
+                likes = i_likes.get('count')
+                dict_photos[likes] = photo_id
+        list_of_ids = sorted(dict_photos.items(), reverse=True)
+        return list_of_ids
+
+    def get_photo_1(self,user_id):
+        list = self.get_photos_id(user_id)
+        count = 0
+        for i in list:
+            count += 1
+            if count == 1:
+                return i[1]
+
+    def get_photo_2(self,user_id):
+        list = self.get_photos_id(user_id)
+        count = 0
+        for i in list:
+            count += 1
+            if count == 2:
+                return i[1]
+
+    def get_photo_3(self,user_id):
+        list = self.get_photos_id(user_id)
+        count = 0
+        for i in list:
+            count += 1
+            if count == 3:
+                return i[1]
+
+
 
 
 bot = VKBot('342034365')
-# print(bot.get_photo('342034365'))
-# print(bot.find_user('342034365'))
-#pprint(bot.get_photos_id('342034365'))
-
+print(bot.get_photos_id('328116348'))
+print(bot.get_photo_1('328116348'))
+print(bot.get_photo_2('328116348'))
+print(bot.get_photo_3('328116348'))
 # ------------------------------------------------------------------------------#
 
 vk = vk_api.VkApi(token=comm_token)  # Авторизуемся как сообщество
@@ -224,7 +226,9 @@ def get_age(user_id):
 
 def find_city(user_id):
     url = f'https://api.vk.com/method/users.get?fields=city'
-    params = {'access_token': user_token, 'user_ids': user_id, 'v': '5.131'}
+    params = {'access_token': user_token,
+              'user_ids': user_id,
+              'v': '5.131'}
     repl = requests.get(url, params=params)
     response = repl.json()
     information_dict = response['response']
@@ -246,7 +250,9 @@ def find_user(user_id):
               'age_from': get_age(user_id),
               'age_to': get_age(user_id),
               'city': city_id(user_id),
-              'status': '1' or '6',
+              'is_closed': False,
+              'can_access_closed': True,
+              #'status': '1' or '6',
               'count': 100}
     resp = requests.get(url, params=params)
     resp_json = resp.json()
@@ -264,14 +270,16 @@ def find_user(user_id):
         insert_data(first_name, last_name, vk_id, vk_link)
     return f'Поиск завершён'
 
+# found_person_info()
+# person_id()
+
 def get_photos_id(user_id):
     url = 'https://api.vk.com/method/photos.getAll'
     params = {'access_token': user_token,
               'type' : 'album',
-              #'photo_sizes' : 1,
-              #'no_service_albums' : 1,
+              'owner_id' : user_id,
               'extended': 1,
-              'count' : 3,
+              'count' : 25,
               'v': '5.131'}
     resp = requests.get(url, params=params)
     dict_photos = dict()
@@ -283,7 +291,7 @@ def get_photos_id(user_id):
         i_likes = i.get('likes')
         if i_likes.get('count'):
             likes = i_likes.get('count')
-    dict_photos[likes] = photo_id
+            dict_photos[likes] = photo_id
     list_of_ids = sorted(dict_photos.items(), reverse=True)
     return list_of_ids
 
