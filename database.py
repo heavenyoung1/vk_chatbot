@@ -1,7 +1,6 @@
 import psycopg2
-
-
 from config import *
+from pprint import pprint
 
 connection = psycopg2.connect(
     host=host,
@@ -43,9 +42,23 @@ def insert_data(first_name, last_name, vk_id, vk_link):
 def select():
     with connection.cursor() as cursor:
         cursor.execute(
-            """SELECT id, first_name, last_name, vk_link  FROM users;"""
+            """SELECT first_name, last_name, vk_id, vk_link  FROM users;"""
         )
-        return cursor.fetchall()
+        return cursor.fetchone()
+
+def found_person_info():
+    tuple = select()
+    list = []
+    for i in tuple:
+        list.append(i)
+    return f'{list[0]} {list[1]}, ссылка - {list[3]}'
+
+def person_id():
+    tuple = select()
+    list = []
+    for i in tuple:
+        list.append(i)
+    return str(list[2])
 
 
 def drop():
