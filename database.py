@@ -12,18 +12,22 @@ connection = psycopg2.connect(
 connection.autocommit = True
 
 
-def create_table():
+def create_table_users():
     with connection.cursor() as cursor:
         cursor.execute(
             """CREATE TABLE users(
                 id serial,
                 first_name varchar(50) NOT NULL,
                 last_name varchar(50) NOT NULL,
-                vk_id varchar(75) NOT NULL,
-                vk_link varchar(75) PRIMARY KEY);"""
+                vk_id varchar(75) NOT NULL PRIMARY KEY,
+                vk_link varchar(75));"""
         )
     print("[INFO] Table was created.")
 
+#def seen_users():
+    
+    
+    
 
 # def insert_data():
 #     with connection.cursor() as cursor:
@@ -39,22 +43,31 @@ def insert_data(first_name, last_name, vk_id, vk_link):
             ('{first_name}', '{last_name}', '{vk_id}', '{vk_link}');"""
         )
 
-def select():
+# def select():
+#     with connection.cursor() as cursor:
+#         cursor.execute(
+#             """SELECT first_name, last_name, vk_id, vk_link  FROM users ORDER BY id;"""
+#         )
+#         return cursor.fetchone()
+
+def select(offset):
     with connection.cursor() as cursor:
         cursor.execute(
-            """SELECT first_name, last_name, vk_id, vk_link  FROM users;"""
+            f"""SELECT first_name, last_name, vk_id, vk_link  FROM users 
+                ORDER BY id
+                OFFSET '{offset}';"""
         )
         return cursor.fetchone()
 
-def found_person_info():
-    tuple = select()
+def found_person_info(offset):
+    tuple = select(offset)
     list = []
     for i in tuple:
         list.append(i)
     return f'{list[0]} {list[1]}, ссылка - {list[3]}'
 
-def person_id():
-    tuple = select()
+def person_id(offset):
+    tuple = select(offset)
     list = []
     for i in tuple:
         list.append(i)
@@ -72,4 +85,5 @@ def drop():
 # create_table()
 # insert_data()
 # drop()
+#(select(50))
 
