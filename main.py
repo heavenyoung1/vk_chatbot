@@ -69,6 +69,33 @@ def get_age(user_id):
             return year_now - year
         except IndexError:
             write_msg(user_id, 'ОШИБКА ДАТЫ РОЖДЕНИЯ')
+            for event in longpoll.listen():
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                    write_msg(user_id, 'Введите ваш возраст: ')
+                    for event in longpoll.listen():
+                        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                            age = event.text
+                            return age
+
+
+def cities(user_id, city_name):
+    url = url = f'https://api.vk.com/method/database.getCities'
+    params = {'access_token': user_token,
+              'country_id': 1,
+              'q' : f'{city_name}',
+              'need_all': 0,
+              'count': 1000,
+              'v': '5.131'}
+    repl = requests.get(url, params=params)
+    response = repl.json()
+    information_list = response['response']
+    list_cities = information_list['items']
+    for i in list_cities:
+        found_city_name = i.get('title')
+        if found_city_name == city_name:
+            found_city_id = i.get('id')
+            return int(found_city_id)
+print(cities('342034365', 'Брянск'))
 
 # ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ГОРОДЕ ПОЛЬЗОВАТЕЛЯ
 def find_city(user_id):
@@ -83,12 +110,28 @@ def find_city(user_id):
         for key, value in i.items():
             if key == 'city':
                 dict_city = i.get('city')
-    return dict_city
+                try:
+                    return dict_city
+                except UnboundLocalError:
+                    write_msg(user_id, 'Ошибка получения города')
+                    for event in longpoll.listen():
+                        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                            write_msg(user_id, 'Введите название вашего города: ')
+                            for event in longpoll.listen():
+                                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                                    city_name = event.text
+                                    write_msg(user_id, city_name)
+
+
+
+print(find_city('342034365'))
 
 # ПОЛУЧЕНИЕ ID ГОРОДА ИЗ find_city()
 def city_id(user_id):  # SEARCHING ID CITY
     dict = find_city(user_id)
     return str(dict.get('id'))
+
+
 
 # ПОИСК ЧЕЛОВЕКА ПО ПОЛУЧЕННЫМ ДАННЫМ
 def find_user(user_id):
