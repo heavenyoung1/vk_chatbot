@@ -1,6 +1,6 @@
 import psycopg2
 from config import *
-from pprint import pprint
+
 
 connection = psycopg2.connect(
     host=host,
@@ -12,9 +12,10 @@ connection = psycopg2.connect(
 connection.autocommit = True
 
 def create_table_users():
+    """СОЗДАНИЕ ТАБЛИЦЫ USERS (НАЙДЕННЫЕ ПОЛЬЗОВАТЕЛИ"""
     with connection.cursor() as cursor:
         cursor.execute(
-            """CREATE TABLE users(
+            """CREATE TABLE IF NOT EXISTS users(
                 id serial,
                 first_name varchar(50) NOT NULL,
                 last_name varchar(25) NOT NULL,
@@ -23,99 +24,68 @@ def create_table_users():
         )
     print("[INFO] Table USERS was created.")
 
-# def create_table_seen_users():
-#     with connection.cursor() as cursor:
-#         cursor.execute(
-#             """CREATE TABLE seen_users(
-#             id serial,
-#             vk_id varchar(50) PRIMARY KEY references users(vk_id));"""
-#         )
+def create_table_seen_users(): #references users(vk_id)
+    """СОЗДАНИЕ ТАБЛИЦЫ SEEN_USERS (ПРОСМОТРЕННЫЕ ПОЛЬЗОВАТЕЛИ"""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS seen_users(
+            id serial,
+            vk_id varchar(50) PRIMARY KEY);"""
+        )
 
-# def insert_seen_users(vk_id):
-#      with connection.cursor() as cursor:
-#             cursor.execute(
-#                 f"""INSERT INTO seen_users (vk_id) VALUES ('{found_vk_id(offset)}');""")
-
-# def drop_seen_users():
-#     with connection.cursor() as cursor:
-#         cursor.execute(
-#             """DROP TABLE seen_users;"""
-#         )
-#         print('[INFO] Table SEEN_USERS was deleted.')
-
-
-
-# def insert_data():
-#     with connection.cursor() as cursor:
-#         cursor.execute(
-#             """INSERT INTO users (first_name, last_name, vk_link) VALUES
-#             ('Eugene', 'Mefyod', '12345678');"""
-#         )
-
-def insert_data(first_name, last_name, vk_id, vk_link):
+def insert_data_users(first_name, last_name, vk_id, vk_link):
+    """ВСТАВКА ДАННЫХ В ТАБЛИЦУ USERS"""
     with connection.cursor() as cursor:
         cursor.execute(
             f"""INSERT INTO users (first_name, last_name, vk_id, vk_link) 
             VALUES ('{first_name}', '{last_name}', '{vk_id}', '{vk_link}');"""
         )
 
-# def select():
-#     with connection.cursor() as cursor:
-#         cursor.execute(
-#             """SELECT first_name, last_name, vk_id, vk_link  FROM users ORDER BY id;"""
-#         )
-#         return cursor.fetchone()
+def insert_data_seen_users(vk_id, offset):
+    """ВСТАВКА ДАННЫХ В ТАБЛИЦУ SEEN_USERS"""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""INSERT INTO seen_users (vk_id) 
+            VALUES ('{vk_id}')
+            OFFSET '{offset}';"""
+        )
 
-# def select(offset):
-#     with connection.cursor() as cursor:
-#         cursor.execute(
-#             f"""SELECT first_name, last_name, vk_id, vk_link  FROM users
-#                 ORDER BY id
-#                 OFFSET '{offset}';"""
-#         )
-#         return cursor.fetchone()
 
 def select(offset):
+    """ВЫБОРКА ИЗ НЕПРОСМОТРЕННЫХ ЛЮДЕЙ"""
     with connection.cursor() as cursor:
         cursor.execute(
-            f"""SELECT first_name, last_name, vk_id, vk_link  FROM users
-                ORDER BY id
-                OFFSET '{offset}';"""
-        )
+            f"""SELECT u.first_name,
+                        u.last_name,
+                        u.vk_id,
+                        u.vk_link,
+                        su.vk_id
+                        FROM users AS u
+                        LEFT JOIN seen_users AS su 
+                        ON u.vk_id = su.vk_id
+                        WHERE su.vk_id IS NULL
+                        OFFSET '{offset}';"""
+    )
         return cursor.fetchone()
 
-def found_person_info(offset):
-    tuple = select(offset)
-    list = []
-    for i in tuple:
-        list.append(i)
-    return f'{list[0]} {list[1]}, ссылка - {list[3]}'
-
-def found_vk_id(offset):
-    tuple = select(offset)
-    list = []
-    for i in tuple:
-        list.append(i)
-    return f'{list[2]}'
-
-def person_id(offset):
-    tuple = select(offset)
-    list = []
-    for i in tuple:
-        list.append(i)
-    return str(list[2])
-
-
-def drop():
+def drop_users():
+    """УДАЛЕНИЕ ТАБЛИЦЫ USERS КАСКАДОМ"""
     with connection.cursor() as cursor:
         cursor.execute(
-            """DROP TABLE users;"""
+            """DROP TABLE IF EXISTS users CASCADE;"""
         )
         print('[INFO] Table USERS was deleted.')
 
-# drop()
-# create_table()
-# insert_data()
-# drop()
-#(select(50))
-#drop_seen_users()
+def drop_seen_users():
+    """УДАЛЕНИЕ ТАБЛИЦЫ SEEN_USERS КАСКАДОМ"""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """DROP TABLE  IF EXISTS seen_users CASCADE;"""
+        )
+        print('[INFO] Table USERS was deleted.')
+
+def creating_database():
+    drop_users()
+    drop_seen_users()
+    create_table_users()
+    create_table_seen_users()
