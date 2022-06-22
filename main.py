@@ -4,10 +4,7 @@ import datetime
 from vk_api.longpoll import VkLongPoll, VkEventType
 from config import user_token, comm_token, offset
 from random import randrange
-import json
-from pprint import pprint
 from database import *
-
 
 
 vk = vk_api.VkApi(token=comm_token)  # Авторизуемся как сообщество
@@ -18,8 +15,9 @@ def write_msg(user_id, message):  # метод для отправки сооб�
                                 'message': message,
                                 'random_id': randrange(10 ** 7)})
 
-# ПОЛУЧЕНИЕ ИМЕНИ ПОЛЬЗОВАТЕЛЯ, КОТОРЫЙ НАПИСАЛ БОТУ
+
 def name(user_id):
+    """ПОЛУЧЕНИЕ ИМЕНИ ПОЛЬЗОВАТЕЛЯ, КОТОРЫЙ НАПИСАЛ БОТУ"""
     url = f'https://api.vk.com/method/users.get'
     params = {'access_token': user_token,
               'user_ids': user_id,
@@ -33,8 +31,9 @@ def name(user_id):
             last_name = i.get('last_name')
             return first_name
 
-# ПОЛУЧЕНИЕ ПОЛА ПОЛЬЗОВАТЕЛЯ, МЕНЯЕТ НА ПРОТИВОПОЛОЖНЫЙ
+
 def get_sex(user_id):
+    """ПОЛУЧЕНИЕ ПОЛА ПОЛЬЗОВАТЕЛЯ, МЕНЯЕТ НА ПРОТИВОПОЛОЖНЫЙ"""
     url = f'https://api.vk.com/method/users.get'
     params = {'access_token':user_token,
               'user_ids':user_id,
@@ -51,8 +50,9 @@ def get_sex(user_id):
             find_sex = 2
             return find_sex
 
-# ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ
+
 def get_age(user_id):
+    """ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ"""
     url = url = f'https://api.vk.com/method/users.get?fields=bdate'
     params = {'access_token':user_token,
               'user_ids': user_id,
@@ -79,13 +79,10 @@ def get_age(user_id):
                                 break
                             else:
                                 return age
-                            # if age != '' or age != None:
-                            #     return int(age)
-                            # else:
-                            #     break
 
 
 def cities(user_id, city_name):
+    """ПОЛУЧЕНИЕ ID ГОРОДА ПОЛЬЗОВАТЕЛЯ ПО НАЗВАНИЮ"""
     url = url = f'https://api.vk.com/method/database.getCities'
     params = {'access_token': user_token,
               'country_id': 1,
@@ -104,11 +101,8 @@ def cities(user_id, city_name):
             return int(found_city_id)
 
 
-#print(cities('342034365', 'Брянск'))
-
-# ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ГОРОДЕ ПОЛЬЗОВАТЕЛЯ
 def find_city(user_id):
-    #global id_city
+    """ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ГОРОДЕ ПОЛЬЗОВАТЕЛЯ"""
     url = f'https://api.vk.com/method/users.get?fields=city'
     params = {'access_token': user_token,
               'user_ids': user_id,
@@ -137,49 +131,14 @@ def find_city(user_id):
                                 break
 
 
-
-
-
-find_city('342034365')
-        # for key, value in i.items():
-        #     if key == 'city':
-
-        #         try:
-        #             return id_city
-        #         except UnboundLocalError:
-        #             write_msg(user_id, 'Ошибка получения города')
-        #             for event in longpoll.listen():
-        #                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-        #                     write_msg(user_id, 'Введите название вашего города: ')
-        #                     for event in longpoll.listen():
-        #                         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-        #                             city_name = event.text
-        #                             #global id_city
-        #                             id_city = cities(user_id, city_name)
-        #                             if id_city != '' or id_city != None:
-        #                                 return str(id_city)
-        #                             else:
-        #                                 break
-
-# ПОЛУЧЕНИЕ ID ГОРОДА ИЗ find_city()
-# def city_id(user_id):  # SEARCHING ID CITY
-#     dict = find_city(user_id)
-#     try:
-#         return str(dict.get('id'))
-#     except AttributeError:
-#         return find_city(user_id)
-
-
-
-# ПОИСК ЧЕЛОВЕКА ПО ПОЛУЧЕННЫМ ДАННЫМ
 def find_user(user_id):
+    """ПОИСК ЧЕЛОВЕКА ПО ПОЛУЧЕННЫМ ДАННЫМ"""
     url = f'https://api.vk.com/method/users.search'
     params = {'access_token': user_token,
               'v': '5.131', 'sex': get_sex(user_id),
               'age_from': get_age(user_id),
               'age_to': get_age(user_id),
               'city': find_city(user_id),
-              #'city': id_city,
               'fields': 'is_closed',
               'fields':'id',
               'fields': 'first_name',
@@ -190,7 +149,6 @@ def find_user(user_id):
     resp_json = resp.json()
     dict_1 = resp_json['response']
     list_1 = dict_1['items']
-    information = []
     drop_users()
     drop_seen_users()
     create_table_users()
@@ -206,9 +164,9 @@ def find_user(user_id):
             continue
     return f'Поиск завершён'
 
-# ПОЛУЧЕНИЕ ВСЕХ ID ФОТОГРАФИЙ ПОЛЬЗОВАТЕЛЯ
-# СОРТИРОВКА ID ПО КОЛИЧЕСТВУ ЛАЙКОВ В ОБРАТНОМ ПОРЯДКЕ
+
 def get_photos_id(user_id):
+    """ПОЛУЧЕНИЕ ID ФОТОГРАФИЙ С РАНЖИРОВАНИЕМ В ОБРАТНОМ ПОРЯДКЕ"""
     url = 'https://api.vk.com/method/photos.getAll'
     params = {'access_token': user_token,
               'type':'album',
@@ -230,8 +188,8 @@ def get_photos_id(user_id):
     list_of_ids = sorted(dict_photos.items(), reverse=True)
     return list_of_ids
 
-# ПОЛУЧЕНИЕ ID ФОТОГРАФИИ, ИДЕНТИЧЕН 2 И 3 МЕТОДАМ
 def get_photo_1(user_id):
+    """ПОЛУЧЕНИЕ ID ФОТОГРАФИИ № 1"""
     list = get_photos_id(user_id)
     count = 0
     for i in list:
@@ -240,6 +198,7 @@ def get_photo_1(user_id):
             return i[1]
 
 def get_photo_2(user_id):
+    """ПОЛУЧЕНИЕ ID ФОТОГРАФИИ № 2"""
     list = get_photos_id(user_id)
     count = 0
     for i in list:
@@ -248,6 +207,7 @@ def get_photo_2(user_id):
             return i[1]
 
 def get_photo_3(user_id):
+    """ПОЛУЧЕНИЕ ID ФОТОГРАФИИ № 3"""
     list = get_photos_id(user_id)
     count = 0
     for i in list:
@@ -257,6 +217,7 @@ def get_photo_3(user_id):
 
 
 def found_person_info(offset):
+    """ВЫВОД ИНФОРМАЦИИ О НАЙДЕННОМ ПОЛЬЗОВАТЕЛИ"""
     tuple = select(offset)
     list = []
     for i in tuple:
@@ -264,6 +225,7 @@ def found_person_info(offset):
     return f'{list[0]} {list[1]}, ссылка - {list[3]}'
 
 def found_vk_id(offset):
+    """ВЫВОД ID НАЙДЕННОГО ПОЛЬЗОВАТЕЛЯ"""
     tuple = select(offset)
     list = []
     for i in tuple:
@@ -271,6 +233,7 @@ def found_vk_id(offset):
     return f'{list[2]}'
 
 def person_id(offset):
+    """ВЫВОД ID НАЙДЕННОГО ПОЛЬЗОВАТЕЛЯ"""
     tuple = select(offset)
     list = []
     for i in tuple:
