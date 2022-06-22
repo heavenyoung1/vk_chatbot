@@ -22,7 +22,7 @@ def get_button(text, color):
 keyboard = {
     "one_time" : False,
     "buttons" : [
-        [get_button('Начать поиск', 'primary'), get_button('Ввести возраст', 'primary')],
+        [get_button('Начать поиск', 'primary')],
         [get_button('Назад', 'secondary'), get_button('Вперёд', 'primary')]
     ]
 }
@@ -69,6 +69,7 @@ def find_persons(user_id, offset):
     write_msg(user_id, found_person_info(offset))
     person_id(offset)
     found_vk_id(offset)
+    insert_data_seen_users(found_vk_id(offset), offset )
     get_photos_id(person_id(offset))
     send_photo_1(user_id, 'Фото номер 1')
     if get_photo_2(person_id(offset)) != None:
@@ -85,15 +86,10 @@ for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
         request = event.text.lower()
         user_id = str(event.user_id)
-        find_city(user_id)
         msg = event.text.lower()
         sender(user_id, msg.lower())
         if request == 'начать поиск':
-            write_msg(event.user_id, f'Здравствуй, {name(user_id)}, сейчас я выдам тебе людей, которые подошли тебе, жми Вперёд, чтобы листать по списку.') # , твой id - {user_id}
-            #write_msg(user_id, age_from(user_id))
-            get_sex(user_id)
-            city_id(user_id)
-            get_age(user_id)
+            write_msg(event.user_id, f'Здравствуй, {name(user_id)}') # , твой id - {user_id}
             find_user(user_id)
             find_persons(user_id, offset)
 
@@ -105,4 +101,3 @@ for event in longpoll.listen():
                 break
         else:
             write_msg(event.user_id, 'Ваш вопрос непонятен.')
-
