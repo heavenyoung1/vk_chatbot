@@ -1,47 +1,7 @@
-import vk_api
+from keyboard import keyboard, sender
 from vk_api.longpoll import VkLongPoll, VkEventType
 from config import user_token, comm_token, offset
-from random import randrange
-import requests
 from main import *
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-
-vk = vk_api.VkApi(token=comm_token) # АВТОРИЗАЦИЯ СООБЩЕСТВА
-longpoll = VkLongPoll(vk) # РАБОТА С СООБЩЕНИЯМИ
-
-def get_button(text, color):
-    return {
-                "action": {
-                    "type": "text",
-                    "payload": "{\"button\": \"" + "1" + "\"}",
-                    "label": f"{text}"
-                },
-                "color": f"{color}"
-            }
-
-keyboard = {
-    "one_time" : False,
-    "buttons" : [
-        [get_button('Начать поиск', 'primary')],
-        [get_button('Назад', 'secondary'), get_button('Вперёд', 'primary')]
-    ]
-}
-
-keyboard = json.dumps(keyboard, ensure_ascii = False).encode('utf-8')
-keyboard = str(keyboard.decode('utf-8'))
-
-def sender(user_id, text):
-    vk.method('messages.send', {'user_id' : user_id,
-                                'message' : text,
-                                'random_id' : 0,
-                                'keyboard' : keyboard})
-
-
-def write_msg(user_id, message):
-    vk.method('messages.send', {'user_id': user_id,
-                                'message': message,
-                                'random_id': randrange(10 ** 7)
-                                })
 
 def send_photo_1(user_id, message):
     vk.method("messages.send", {"user_id": user_id,
@@ -64,12 +24,10 @@ def send_photo_3(user_id, message):
                                 'attachment': f'photo{person_id(offset)}_{get_photo_3(person_id(offset))}',
                                 "random_id": 0})
 
-
 def find_persons(user_id, offset):
     write_msg(user_id, found_person_info(offset))
     person_id(offset)
-    found_vk_id(offset)
-    insert_data_seen_users(found_vk_id(offset), offset )
+    insert_data_seen_users(person_id(offset), offset )
     get_photos_id(person_id(offset))
     send_photo_1(user_id, 'Фото номер 1')
     if get_photo_2(person_id(offset)) != None:
