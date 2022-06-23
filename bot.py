@@ -1,7 +1,8 @@
 from keyboard import keyboard, sender
 from vk_api.longpoll import VkLongPoll, VkEventType
-from config import user_token, comm_token, offset
+from config import user_token, comm_token, offset, line
 from main import *
+
 
 def send_photo_1(user_id, message):
     vk.method("messages.send", {"user_id": user_id,
@@ -36,9 +37,6 @@ def find_persons(user_id, offset):
     else:
         write_msg(user_id, f'Больше фотографий нет')
 
-line = range(0,100)
-#drop_seen_users()
-#create_table_seen_users()
 
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
@@ -47,15 +45,19 @@ for event in longpoll.listen():
         msg = event.text.lower()
         sender(user_id, msg.lower())
         if request == 'начать поиск':
-            write_msg(event.user_id, f'Здравствуй, {name(user_id)}') # , твой id - {user_id}
+            creating_database()
+            write_msg(event.user_id, f'Привет, {name(user_id)}')
             find_user(user_id)
+            write_msg(event.user_id, f'Нашёл для тебя пару, жми на кнопку "Вперёд"')
             find_persons(user_id, offset)
 
         elif request == 'вперёд':
             for i in line:
-                #if request == 'вперёд':
                 offset += 1
                 find_persons(user_id, offset)
                 break
+        elif request == 'назад':
+            write_msg(user_id, 'Жми вперёд')
+
         else:
-            write_msg(event.user_id, 'Ваш вопрос непонятен.')
+            write_msg(event.user_id, 'Твоё сообщение непонятно')
