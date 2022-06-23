@@ -1,20 +1,24 @@
+from config import user_token, comm_token, offset
 import vk_api
 import requests
 import datetime
 from vk_api.longpoll import VkLongPoll, VkEventType
-from config import user_token, comm_token, offset
+
+
 from random import randrange
 from database import *
 
 
-vk = vk_api.VkApi(token=comm_token)  # Авторизуемся как сообщество
-longpoll = VkLongPoll(vk)  # Работа с сообщениями
+vk = vk_api.VkApi(token=comm_token)  #АВТОРИЗАЦИЯ СООБЩЕСТВА
+longpoll = VkLongPoll(vk)  # РАБОТА С СООБЩЕНИЯМИ
 
-def write_msg(user_id, message):  # метод для отправки сообщения
+
+def write_msg(user_id, message):
+    """МЕТОД ДЛЯ ОТПРАВКИ СООБЩЕНИЙ"""
     vk.method('messages.send', {'user_id': user_id,
                                 'message': message,
                                 'random_id': randrange(10 ** 7)})
-
+    
 
 def name(user_id):
     """ПОЛУЧЕНИЕ ИМЕНИ ПОЛЬЗОВАТЕЛЯ, КОТОРЫЙ НАПИСАЛ БОТУ"""
@@ -28,17 +32,16 @@ def name(user_id):
     for i in information_dict:
         for key, value in i.items():
             first_name = i.get('first_name')
-            last_name = i.get('last_name')
             return first_name
 
 
 def get_sex(user_id):
     """ПОЛУЧЕНИЕ ПОЛА ПОЛЬЗОВАТЕЛЯ, МЕНЯЕТ НА ПРОТИВОПОЛОЖНЫЙ"""
     url = f'https://api.vk.com/method/users.get'
-    params = {'access_token':user_token,
-              'user_ids':user_id,
-              'fields':'sex',
-              'v':'5.131'}
+    params = {'access_token': user_token,
+              'user_ids': user_id,
+              'fields': 'sex',
+              'v': '5.131'}
     repl = requests.get(url, params=params)
     response = repl.json()
     information_list = response['response']
@@ -51,10 +54,10 @@ def get_sex(user_id):
             return find_sex
 
 
-def get_age(user_id):
-    """ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ"""
+def get_age_low(user_id):
+    """ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ ИЛИ НИЖНЕЙ ГРАНИЦЫ ДЛЯ ПОИСКА"""
     url = url = f'https://api.vk.com/method/users.get?fields=bdate'
-    params = {'access_token':user_token,
+    params = {'access_token': user_token,
               'user_ids': user_id,
               'fields': 'bdate',
               'v': '5.131'}
@@ -62,23 +65,43 @@ def get_age(user_id):
     response = repl.json()
     information_list = response['response']
     for i in information_list:
-        date = i.get('bdate')  # Mehod is complited
-        date_list = date.split('.')
-        try:
-            year = int(date_list[2])
-            year_now = int(datetime.date.today().year)
-            return year_now - year
-        except IndexError:
-            for event in longpoll.listen():
-                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                    write_msg(user_id, 'Введите ваш возраст: ')
-                    for event in longpoll.listen():
-                        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                            age = event.text
-                            if age == None or age == '':
-                                break
-                            else:
-                                return age
+        date = i.get('bdate')
+    date_list = date.split('.')
+    if len(date_list) == 3:
+        year = int(date_list[2])
+        year_now = int(datetime.date.today().year)
+        return year_now - year
+    elif len(date_list) == 2 or date not in information_list:
+        write_msg(user_id, 'Введите нижний порог возраста: ')
+        for event in longpoll.listen():
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                age = event.text
+                return age
+
+
+def get_age_high(user_id):
+    """ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ ИЛИ ВЕРХНЕЙ ГРАНИЦЫ ДЛЯ ПОИСКА"""
+    url = url = f'https://api.vk.com/method/users.get'
+    params = {'access_token': user_token,
+              'user_ids': user_id,
+              'fields': 'bdate',
+              'v': '5.131'}
+    repl = requests.get(url, params=params)
+    response = repl.json()
+    information_list = response['response']
+    for i in information_list:
+        date = i.get('bdate')
+    date_list = date.split('.')
+    if len(date_list) == 3:
+        year = int(date_list[2])
+        year_now = int(datetime.date.today().year)
+        return year_now - year
+    elif len(date_list) == 2 or date not in information_list:
+        write_msg(user_id, 'Введите верхний порог возраста: ')
+        for event in longpoll.listen():
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                age = event.text
+                return age
 
 
 def cities(user_id, city_name):
@@ -86,7 +109,7 @@ def cities(user_id, city_name):
     url = url = f'https://api.vk.com/method/database.getCities'
     params = {'access_token': user_token,
               'country_id': 1,
-              'q' : f'{city_name}',
+              'q': f'{city_name}',
               'need_all': 0,
               'count': 1000,
               'v': '5.131'}
@@ -117,7 +140,7 @@ def find_city(user_id):
             id = str(city.get('id'))
             return id
         elif 'city' not in i:
-            write_msg(user_id, 'Ошибка получения города')
+            write_msg(user_id, 'Нажми на кнопку "Начать поиск"')
             for event in longpoll.listen():
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                     write_msg(user_id, 'Введите название вашего города: ')
@@ -135,12 +158,13 @@ def find_user(user_id):
     """ПОИСК ЧЕЛОВЕКА ПО ПОЛУЧЕННЫМ ДАННЫМ"""
     url = f'https://api.vk.com/method/users.search'
     params = {'access_token': user_token,
-              'v': '5.131', 'sex': get_sex(user_id),
-              'age_from': get_age(user_id),
-              'age_to': get_age(user_id),
+              'v': '5.131',
+              'sex': get_sex(user_id),
+              'age_from': get_age_low(user_id),
+              'age_to': get_age_high(user_id),
               'city': find_city(user_id),
               'fields': 'is_closed',
-              'fields':'id',
+              'fields': 'id',
               'fields': 'first_name',
               'fields': 'last_name',
               'status': '1' or '6',
@@ -149,10 +173,6 @@ def find_user(user_id):
     resp_json = resp.json()
     dict_1 = resp_json['response']
     list_1 = dict_1['items']
-    drop_users()
-    drop_seen_users()
-    create_table_users()
-    create_table_seen_users()
     for person_dict in list_1:
         if person_dict.get('is_closed') == False:
             first_name = person_dict.get('first_name')
@@ -169,11 +189,11 @@ def get_photos_id(user_id):
     """ПОЛУЧЕНИЕ ID ФОТОГРАФИЙ С РАНЖИРОВАНИЕМ В ОБРАТНОМ ПОРЯДКЕ"""
     url = 'https://api.vk.com/method/photos.getAll'
     params = {'access_token': user_token,
-              'type':'album',
-              'owner_id':user_id,
-              'extended':1,
-              'count':25,
-              'v':'5.131'}
+              'type': 'album',
+              'owner_id': user_id,
+              'extended': 1,
+              'count': 25,
+              'v': '5.131'}
     resp = requests.get(url, params=params)
     dict_photos = dict()
     resp_json = resp.json()
@@ -224,13 +244,6 @@ def found_person_info(offset):
         list.append(i)
     return f'{list[0]} {list[1]}, ссылка - {list[3]}'
 
-def found_vk_id(offset):
-    """ВЫВОД ID НАЙДЕННОГО ПОЛЬЗОВАТЕЛЯ"""
-    tuple = select(offset)
-    list = []
-    for i in tuple:
-        list.append(i)
-    return f'{list[2]}'
 
 def person_id(offset):
     """ВЫВОД ID НАЙДЕННОГО ПОЛЬЗОВАТЕЛЯ"""
