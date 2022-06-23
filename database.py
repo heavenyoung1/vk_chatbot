@@ -32,6 +32,7 @@ def create_table_seen_users(): #references users(vk_id)
             id serial,
             vk_id varchar(50) PRIMARY KEY);"""
         )
+    print("[INFO] Table SEEN_USERS was created.")
 
 def insert_data_users(first_name, last_name, vk_id, vk_link):
     """ВСТАВКА ДАННЫХ В ТАБЛИЦУ USERS"""
@@ -82,7 +83,7 @@ def drop_seen_users():
         cursor.execute(
             """DROP TABLE  IF EXISTS seen_users CASCADE;"""
         )
-        print('[INFO] Table USERS was deleted.')
+        print('[INFO] Table SEEN_USERS was deleted.')
 
 def creating_database():
     drop_users()
