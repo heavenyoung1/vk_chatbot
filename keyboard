@@ -1,5 +1,4 @@
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from main import vk, longpoll
+from main import vk
 import json
 
 
@@ -18,16 +17,16 @@ keyboard = {
     "one_time": False,
     "buttons": [
         [get_button('Начать поиск', 'primary')],
-        [get_button('Назад', 'secondary'), get_button('Вперёд', 'primary')]
+        [get_button('Назад', 'secondary'), get_button('Вперёд', 'secondary')]
     ]
 }
 
 
 def sender(user_id, text):
-    vk.method('messages.send', {'user_id' : user_id,
-                                'message' : text,
-                                'random_id' : 0,
-                                'keyboard' : keyboard})
+    vk.method('messages.send', {'user_id': user_id,
+                                'message': text,
+                                'random_id': 0,
+                                'keyboard': keyboard})
 
 
 keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
