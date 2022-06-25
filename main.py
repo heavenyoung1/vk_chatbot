@@ -1,15 +1,13 @@
-from config import user_token, comm_token, offset
+from config import user_token, comm_token, offset, line
 import vk_api
 import requests
 import datetime
 from vk_api.longpoll import VkLongPoll, VkEventType
 
-
 from random import randrange
 from database import *
 
-
-vk = vk_api.VkApi(token=comm_token)  #АВТОРИЗАЦИЯ СООБЩЕСТВА
+vk = vk_api.VkApi(token=comm_token)  # АВТОРИЗАЦИЯ СООБЩЕСТВА
 longpoll = VkLongPoll(vk)  # РАБОТА С СООБЩЕНИЯМИ
 
 
@@ -18,7 +16,7 @@ def write_msg(user_id, message):
     vk.method('messages.send', {'user_id': user_id,
                                 'message': message,
                                 'random_id': randrange(10 ** 7)})
-    
+
 
 def name(user_id):
     """ПОЛУЧЕНИЕ ИМЕНИ ПОЛЬЗОВАТЕЛЯ, КОТОРЫЙ НАПИСАЛ БОТУ"""
@@ -133,7 +131,7 @@ def find_city(user_id):
     repl = requests.get(url, params=params)
     response = repl.json()
     information_dict = response['response']
-    #return information_dict
+    # return information_dict
     for i in information_dict:
         if 'city' in i:
             city = i.get('city')
@@ -208,6 +206,7 @@ def get_photos_id(user_id):
     list_of_ids = sorted(dict_photos.items(), reverse=True)
     return list_of_ids
 
+
 def get_photo_1(user_id):
     """ПОЛУЧЕНИЕ ID ФОТОГРАФИИ № 1"""
     list = get_photos_id(user_id)
@@ -216,6 +215,7 @@ def get_photo_1(user_id):
         count += 1
         if count == 1:
             return i[1]
+
 
 def get_photo_2(user_id):
     """ПОЛУЧЕНИЕ ID ФОТОГРАФИИ № 2"""
@@ -226,6 +226,7 @@ def get_photo_2(user_id):
         if count == 2:
             return i[1]
 
+
 def get_photo_3(user_id):
     """ПОЛУЧЕНИЕ ID ФОТОГРАФИИ № 3"""
     list = get_photos_id(user_id)
@@ -235,6 +236,38 @@ def get_photo_3(user_id):
         if count == 3:
             return i[1]
 
+def send_photo_1(user_id, message, offset):
+    vk.method("messages.send", {"user_id": user_id,
+                                'access_token': user_token,
+                                'message': message,
+                                'attachment': f'photo{person_id(offset)}_{get_photo_1(person_id(offset))}',
+                                "random_id": 0})
+
+def send_photo_2(user_id, message, offset):
+    vk.method("messages.send", {"user_id": user_id,
+                                'access_token': user_token,
+                                'message': message,
+                                'attachment': f'photo{person_id(offset)}_{get_photo_2(person_id(offset))}',
+                                "random_id": 0})
+
+def send_photo_3(user_id, message, offset):
+    vk.method("messages.send", {"user_id": user_id,
+                                'access_token': user_token,
+                                'message': message,
+                                'attachment': f'photo{person_id(offset)}_{get_photo_3(person_id(offset))}',
+                                "random_id": 0})
+
+def find_persons(user_id, offset):
+    write_msg(user_id, found_person_info(offset))
+    person_id(offset)
+    #insert_data_seen_users(person_id(offset), offset )
+    get_photos_id(person_id(offset))
+    send_photo_1(user_id, 'Фото номер 1', offset)
+    if get_photo_2(person_id(offset)) != None:
+        send_photo_2(user_id, 'Фото номер 2', offset)
+        send_photo_3(user_id, 'Фото номер 3', offset)
+    else:
+        write_msg(user_id, f'Больше фотографий нет')
 
 def found_person_info(offset):
     """ВЫВОД ИНФОРМАЦИИ О НАЙДЕННОМ ПОЛЬЗОВАТЕЛИ"""
