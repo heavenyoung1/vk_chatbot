@@ -257,7 +257,7 @@ class VKBot:
     def find_persons(self, user_id, offset):
         self.write_msg(user_id, self.found_person_info(offset))
         self.person_id(offset)
-        # insert_data_seen_users(person_id(offset), offset )
+        insert_data_seen_users(self.person_id(offset), offset) #offset
         self.get_photos_id(self.person_id(offset))
         self.send_photo_1(user_id, 'Фото номер 1', offset)
         if self.get_photo_2(self.person_id(offset)) != None:
