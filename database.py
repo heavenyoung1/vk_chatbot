@@ -1,7 +1,6 @@
 import psycopg2
 from config import *
 
-
 connection = psycopg2.connect(
     host=host,
     user=user,
@@ -10,6 +9,7 @@ connection = psycopg2.connect(
 )
 
 connection.autocommit = True
+
 
 def create_table_users():
     """СОЗДАНИЕ ТАБЛИЦЫ USERS (НАЙДЕННЫЕ ПОЛЬЗОВАТЕЛИ"""
@@ -24,7 +24,8 @@ def create_table_users():
         )
     print("[INFO] Table USERS was created.")
 
-def create_table_seen_users(): #references users(vk_id)
+
+def create_table_seen_users():  # references users(vk_id)
     """СОЗДАНИЕ ТАБЛИЦЫ SEEN_USERS (ПРОСМОТРЕННЫЕ ПОЛЬЗОВАТЕЛИ"""
     with connection.cursor() as cursor:
         cursor.execute(
@@ -34,6 +35,7 @@ def create_table_seen_users(): #references users(vk_id)
         )
     print("[INFO] Table SEEN_USERS was created.")
 
+
 def insert_data_users(first_name, last_name, vk_id, vk_link):
     """ВСТАВКА ДАННЫХ В ТАБЛИЦУ USERS"""
     with connection.cursor() as cursor:
@@ -41,6 +43,7 @@ def insert_data_users(first_name, last_name, vk_id, vk_link):
             f"""INSERT INTO users (first_name, last_name, vk_id, vk_link) 
             VALUES ('{first_name}', '{last_name}', '{vk_id}', '{vk_link}');"""
         )
+
 
 def insert_data_seen_users(vk_id, offset):
     """ВСТАВКА ДАННЫХ В ТАБЛИЦУ SEEN_USERS"""
@@ -66,8 +69,9 @@ def select(offset):
                         ON u.vk_id = su.vk_id
                         WHERE su.vk_id IS NULL
                         OFFSET '{offset}';"""
-    )
+        )
         return cursor.fetchone()
+
 
 def drop_users():
     """УДАЛЕНИЕ ТАБЛИЦЫ USERS КАСКАДОМ"""
@@ -77,6 +81,7 @@ def drop_users():
         )
         print('[INFO] Table USERS was deleted.')
 
+
 def drop_seen_users():
     """УДАЛЕНИЕ ТАБЛИЦЫ SEEN_USERS КАСКАДОМ"""
     with connection.cursor() as cursor:
@@ -84,6 +89,7 @@ def drop_seen_users():
             """DROP TABLE  IF EXISTS seen_users CASCADE;"""
         )
         print('[INFO] Table SEEN_USERS was deleted.')
+
 
 def creating_database():
     drop_users()
