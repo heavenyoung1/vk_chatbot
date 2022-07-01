@@ -2,8 +2,8 @@
 
 ## Запуск программы
 1. Установка необходимых библиотек:
-``` pip install
-    pip install
+``` pip install vk_api
+    pip install psycopg2
     pip install
 ```
 3. Заполните переменные в файле config.py
