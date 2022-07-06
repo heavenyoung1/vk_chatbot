@@ -267,7 +267,7 @@ class VKBot:
             self.write_msg(user_id, f'Больше фотографий нет')
 
     def found_person_info(self, offset):
-        """ВЫВОД ИНФОРМАЦИИ О НАЙДЕННОМ ПОЛЬЗОВАТЕЛИ"""
+        """ВЫВОД ИНФОРМАЦИИ О НАЙДЕННОМ ПОЛЬЗОВАТЕЛЕ"""
         tuple_person = select(offset)
         list_person = []
         for i in tuple_person:
