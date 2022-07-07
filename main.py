@@ -73,7 +73,7 @@ class VKBot:
                 year_now = int(datetime.date.today().year)
                 return year_now - year
             elif len(date_list) == 2 or date not in information_list:
-                self.write_msg(user_id, 'Введите нижний порог возраста: ')
+                self.write_msg(user_id, 'Введите нижний порог возраста (min - 16): ')
                 for event in self.longpoll.listen():
                     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                         age = event.text
@@ -100,7 +100,7 @@ class VKBot:
             year_now = int(datetime.date.today().year)
             return year_now - year
         elif len(date_list) == 2 or date not in information_list:
-            self.write_msg(user_id, 'Введите верхний порог возраста: ')
+            self.write_msg(user_id, 'Введите верхний порог возраста (max - 65): ')
             for event in self.longpoll.listen():
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                     age = event.text
