@@ -84,7 +84,7 @@ class VKBot:
 
     def get_age_high(self, user_id):
         """ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ ИЛИ ВЕРХНЕЙ ГРАНИЦЫ ДЛЯ ПОИСКА"""
-        url = url = f'https://api.vk.com/method/users.get'
+        url = f'https://api.vk.com/method/users.get'
         params = {'access_token': user_token,
                   'user_ids': user_id,
                   'fields': 'bdate',
