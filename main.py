@@ -109,7 +109,7 @@ class VKBot:
     # @staticmethod
     def cities(self, user_id, city_name):
         """ПОЛУЧЕНИЕ ID ГОРОДА ПОЛЬЗОВАТЕЛЯ ПО НАЗВАНИЮ"""
-        url = url = f'https://api.vk.com/method/database.getCities'
+        url = f'https://api.vk.com/method/database.getCities'
         params = {'access_token': user_token,
                   'country_id': 1,
                   'q': f'{city_name}',
