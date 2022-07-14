@@ -45,18 +45,21 @@ class VKBot:
                   'v': '5.131'}
         repl = requests.get(url, params=params)
         response = repl.json()
-        information_list = response['response']
-        for i in information_list:
-            if i.get('sex') == 2:
-                find_sex = 1
-                return find_sex
-            elif i.get('sex') == 1:
-                find_sex = 2
-                return find_sex
+        try:
+            information_list = response['response']
+            for i in information_list:
+                if i.get('sex') == 2:
+                    find_sex = 1
+                    return find_sex
+                elif i.get('sex') == 1:
+                    find_sex = 2
+                    return find_sex
+        except KeyError:
+            self.write_msg(user_id, 'Ошибка получения токена, введите токен в переменную - user_token')
 
     def get_age_low(self, user_id):
         """ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ ИЛИ НИЖНЕЙ ГРАНИЦЫ ДЛЯ ПОИСКА"""
-        url = f'https://api.vk.com/method/users.get'
+        url = url = f'https://api.vk.com/method/users.get'
         params = {'access_token': user_token,
                   'user_ids': user_id,
                   'fields': 'bdate',
@@ -84,32 +87,35 @@ class VKBot:
 
     def get_age_high(self, user_id):
         """ПОЛУЧЕНИЕ ВОЗРАСТА ПОЛЬЗОВАТЕЛЯ ИЛИ ВЕРХНЕЙ ГРАНИЦЫ ДЛЯ ПОИСКА"""
-        url = f'https://api.vk.com/method/users.get'
+        url = url = f'https://api.vk.com/method/users.get'
         params = {'access_token': user_token,
                   'user_ids': user_id,
                   'fields': 'bdate',
                   'v': '5.131'}
         repl = requests.get(url, params=params)
         response = repl.json()
-        information_list = response['response']
-        for i in information_list:
-            date = i.get('bdate')
-        date_list = date.split('.')
-        if len(date_list) == 3:
-            year = int(date_list[2])
-            year_now = int(datetime.date.today().year)
-            return year_now - year
-        elif len(date_list) == 2 or date not in information_list:
-            self.write_msg(user_id, 'Введите верхний порог возраста (max - 65): ')
-            for event in self.longpoll.listen():
-                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                    age = event.text
-                    return age
+        try:
+            information_list = response['response']
+            for i in information_list:
+                date = i.get('bdate')
+            date_list = date.split('.')
+            if len(date_list) == 3:
+                year = int(date_list[2])
+                year_now = int(datetime.date.today().year)
+                return year_now - year
+            elif len(date_list) == 2 or date not in information_list:
+                self.write_msg(user_id, 'Введите верхний порог возраста (max - 65): ')
+                for event in self.longpoll.listen():
+                    if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                        age = event.text
+                        return age
+        except KeyError:
+            self.write_msg(user_id, 'Ошибка получения токена, введите токен в переменную - user_token')
 
     # @staticmethod
     def cities(self, user_id, city_name):
         """ПОЛУЧЕНИЕ ID ГОРОДА ПОЛЬЗОВАТЕЛЯ ПО НАЗВАНИЮ"""
-        url = f'https://api.vk.com/method/database.getCities'
+        url = url = f'https://api.vk.com/method/database.getCities'
         params = {'access_token': user_token,
                   'country_id': 1,
                   'q': f'{city_name}',
@@ -167,10 +173,7 @@ class VKBot:
                   'age_from': self.get_age_low(user_id),
                   'age_to': self.get_age_high(user_id),
                   'city': self.find_city(user_id),
-                  'fields': 'is_closed',
-                  'fields': 'id',
-                  'fields': 'first_name',
-                  'fields': 'last_name',
+                  'fields': 'is_closed, id, first_name, last_name',
                   'status': '1' or '6',
                   'count': 500}
         resp = requests.get(url, params=params)
